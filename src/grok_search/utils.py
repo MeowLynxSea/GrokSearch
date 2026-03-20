@@ -88,6 +88,7 @@ def extract_snippet_for_url(url: str, cleaned_text: str, max_length: int = 200) 
     return ""
 
 
+def extract_unique_urls(text: str) -> list[str]:
     """Extract all unique URLs from text, in order of first appearance."""
     seen: set[str] = set()
     urls: list[str] = []
