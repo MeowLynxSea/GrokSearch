@@ -7,7 +7,7 @@ from typing import Optional
 from .providers.grok import GrokSearchProvider
 from .logger import logger
 from .config import config
-from .utils import extract_sources_from_text, clean_answer, title_from_url
+from .utils import extract_sources_from_text, clean_answer, title_from_url, extract_snippet_for_url
 
 
 app = FastAPI(
@@ -115,6 +115,11 @@ async def search(
             "snippet": src.get("snippet", ""),
         })
         pos += 1
+
+    # 3) Fill empty snippets from answer context (zero LLM cost)
+    for item in organic:
+        if not item.get("snippet"):
+            item["snippet"] = extract_snippet_for_url(item["link"], answer)
 
     elapsed_ms = round((time.time() - start_time) * 1000, 2)
 

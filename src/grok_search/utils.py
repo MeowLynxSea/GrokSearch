@@ -46,7 +46,48 @@ def title_from_url(url: str) -> str:
     return host
 
 
-def extract_unique_urls(text: str) -> list[str]:
+def extract_snippet_for_url(url: str, cleaned_text: str, max_length: int = 200) -> str:
+    """Extract a contextual snippet for a URL from the answer text, zero LLM cost.
+
+    Strategy (in priority order):
+    1. Find the Markdown link [text](url) — use the surrounding sentence.
+    2. Find bare URL mention — use the surrounding sentence.
+    3. Find domain mention — use the surrounding sentence.
+    """
+    if not cleaned_text or not url:
+        return ""
+
+    parsed = urlparse(url)
+    domain = parsed.hostname or ""
+
+    # Split into paragraphs, then sentences within each paragraph
+    lines = [l.strip() for l in cleaned_text.split("\n") if l.strip()]
+
+    def _trim(s: str) -> str:
+        s = s.strip()
+        # Remove markdown link syntax for cleaner snippet
+        s = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)
+        # Remove leftover markdown bold/italic
+        s = re.sub(r"[*_]{1,3}", "", s)
+        if len(s) > max_length:
+            s = s[:max_length].rsplit(" ", 1)[0] + "…"
+        return s
+
+    # Strategy 1 & 2: line contains the URL itself
+    for line in lines:
+        if url in line:
+            return _trim(line)
+
+    # Strategy 3: line mentions the domain (e.g. "github.com")
+    if domain:
+        bare_domain = domain.lstrip("www.")
+        for line in lines:
+            if bare_domain in line.lower():
+                return _trim(line)
+
+    return ""
+
+
     """Extract all unique URLs from text, in order of first appearance."""
     seen: set[str] = set()
     urls: list[str] = []
