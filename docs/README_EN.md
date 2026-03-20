@@ -236,6 +236,11 @@ console.log(data.answer);
 data.organic.forEach(r => console.log(`${r.position}. ${r.title} - ${r.link}`));
 ```
 
+## Acknowledgements
+
+- Thanks to the [linux.do](https://linux.do) community for support and sharing
+- This project is based on [GuDaStudio/GrokSearch](https://github.com/GuDaStudio/GrokSearch) — thanks for the original work
+
 ## License
 
 [MIT License](LICENSE)

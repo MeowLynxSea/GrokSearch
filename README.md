@@ -237,6 +237,11 @@ console.log(data.answer);
 data.organic.forEach(r => console.log(`${r.position}. ${r.title} - ${r.link}`));
 ```
 
+## 致谢
+
+- 感谢 [linux.do](https://linux.do) 社区的支持与分享
+- 本项目基于 [GuDaStudio/GrokSearch](https://github.com/GuDaStudio/GrokSearch) 改造，感谢原项目的贡献
+
 ## 许可证
 
 [MIT License](LICENSE)
