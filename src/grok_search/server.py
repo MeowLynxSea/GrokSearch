@@ -33,10 +33,10 @@ def _verify_api_key(authorization: Optional[str] = None, x_api_key: Optional[str
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 
-@app.get("/search")
+@app.api_route("/search", methods=["GET", "POST"])
 async def search(
     request: Request,
-    q: str = Query(..., description="Search query string"),
+    q: Optional[str] = Query(None, description="Search query string"),
     model: Optional[str] = Query(None, description="Override Grok model for this request"),
     platform: Optional[str] = Query(None, description="Focus platform (e.g. 'Twitter', 'GitHub')"),
     authorization: Optional[str] = Header(None),
@@ -44,8 +44,22 @@ async def search(
 ):
     """
     Perform a web search using Grok's built-in search and return SERP results.
+    Supports both GET (query params) and POST (JSON body).
     """
     _verify_api_key(authorization, x_api_key)
+
+    # For POST requests, read query/model/platform from JSON body
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        q = q or body.get("q") or body.get("query") or body.get("search")
+        model = model or body.get("model")
+        platform = platform or body.get("platform")
+
+    if not q:
+        raise HTTPException(status_code=400, detail="Missing required parameter: q")
 
     start_time = time.time()
 
