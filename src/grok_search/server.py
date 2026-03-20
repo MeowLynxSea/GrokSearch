@@ -49,6 +49,7 @@ async def search(
     _verify_api_key(authorization, x_api_key)
 
     # For POST requests, read query/model/platform from JSON body
+    count = None
     if request.method == "POST":
         try:
             body = await request.json()
@@ -57,6 +58,7 @@ async def search(
         q = q or body.get("q") or body.get("query") or body.get("search")
         model = model or body.get("model")
         platform = platform or body.get("platform")
+        count = body.get("count")
 
     if not q:
         raise HTTPException(status_code=400, detail="Missing required parameter: q")
@@ -116,6 +118,12 @@ async def search(
 
     elapsed_ms = round((time.time() - start_time) * 1000, 2)
 
+    # POST: return flat list for Open WebUI compatibility
+    if request.method == "POST":
+        results = organic[:count] if count else organic
+        return results
+
+    # GET: return full SERP format
     return {
         "searchParameters": {
             "q": q,
